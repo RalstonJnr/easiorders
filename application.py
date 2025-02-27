@@ -20,18 +20,29 @@ import string
 from sqlalchemy.orm import joinedload
 from werkzeug.utils import secure_filename
 
-
-# Set up Flask app and SQLAlchemy
+# Initialize the Flask app and SocketIO
 application = Flask(__name__)
 socketio = SocketIO(application)
-application.config[
-    "SQLALCHEMY_DATABASE_URI"
-] = "sqlite:///orders.db"  # Use SQLite for database storage
-application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False  # Disable modification tracking
-application.secret_key = (
-    "easishoppe"  # Add a secret key for sessions (needed for flash messages)
-)
+
+# Set the database URI depending on the environment
+database_path = os.environ.get("DATABASE_URL", "sqlite:///orders.db")  # Default for local development
+
+# If DATABASE_URL is not set, use /data for persistence on Render
+if database_path.startswith("sqlite:///"):
+    database_path = f"sqlite:////{os.path.join(os.environ.get('HOME', '/data'), 'orders.db')}"
+
+# Set the SQLAlchemy database URI
+application.config["SQLALCHEMY_DATABASE_URI"] = database_path
+
+# Disable SQLAlchemy track modifications (not needed unless you need signals)
+application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Set a secret key for sessions (needed for Flask session management, flash messages, etc.)
+application.secret_key = "easishoppe"
+
+# Initialize SQLAlchemy with the application
 db = SQLAlchemy(application)
+
 
 # Set up Flask-Login
 login_manager = LoginManager()
