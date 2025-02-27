@@ -241,29 +241,27 @@ def register():
     return render_template("register.html")
 
 
-# Login Route
 @application.route("/login", methods=["GET", "POST"])
 def login():
     dark_mode = session.get("dark_mode", False)
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip().lower()  # Trim whitespace and convert to lowercase
         password = request.form["password"]
+        
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
             login_user(user)
             if user.role == 1:
-                return redirect(
-                    url_for("admin_dashboard")
-                )  # Redirect to admin dashboard
+                return redirect(url_for("admin_dashboard"))  # Redirect to admin dashboard
             else:
-                return redirect(
-                    url_for("index")
-                )  # Redirect to home page for non-admin users
+                return redirect(url_for("index"))  # Redirect to home page for non-admin users
         else:
             flash("Incorrect username or password", "error")  # Flash an error message
 
-    return render_template("login.html", dark_mode=dark_mode)
+    # If GET request or failed login, retain username input
+    return render_template("login.html", dark_mode=dark_mode, username=username)
+)
 
 
 # Logout Route
