@@ -24,23 +24,22 @@ from werkzeug.utils import secure_filename
 application = Flask(__name__)
 socketio = SocketIO(application)
 
-# Set the database URI depending on the environment
-database_path = os.environ.get("DATABASE_URL", "sqlite:///orders.db")  # Default for local development
+# Set the database path (use persistent storage on Render)
+database_path = os.environ.get("DATABASE_URL")  # Check if a DATABASE_URL is set
 
-# If DATABASE_URL is not set, use /data for persistence on Render
-if database_path.startswith("sqlite:///"):
-    database_path = f"sqlite:////{os.path.join(os.environ.get('HOME', '/data'), 'orders.db')}"
+if not database_path:  # If DATABASE_URL is not set, use SQLite with persistent storage
+    database_path = "sqlite:////data/orders.db"  # Use /data for persistent storage
 
 # Set the SQLAlchemy database URI
 application.config["SQLALCHEMY_DATABASE_URI"] = database_path
 
-# Disable SQLAlchemy track modifications (not needed unless you need signals)
+# Disable SQLAlchemy track modifications
 application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Set a secret key for sessions (needed for Flask session management, flash messages, etc.)
+# Set a secret key for sessions
 application.secret_key = "easishoppe"
 
-# Initialize SQLAlchemy with the application
+# Initialize SQLAlchemy
 db = SQLAlchemy(application)
 
 
