@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Orders</title>
+    <!-- Importing Static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Importing Bootstrap and Other Modules -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
+</head>
+<body class="{% if dark_mode %}dark-mode{% endif %}">
+	
+	        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="alert-container">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+    <!-- Header Section -->
+    <header class="d-flex justify-content-between align-items-center p-3 bg-light">
+        <div>
+            <a href="{{ url_for('index') }}">
+                <img align="left" width="100vh" src="{{ url_for('static', filename='easiorders.png') }}" alt="logo" />
+            </a>
+        </div>
+        <div class="navbar-text">
+            <div class="d-flex gap-2">
+                {% if current_user.role == 1 %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning">Admin Dashboard</a>
+                {% endif %}
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Home Page</a>
+                <form method="GET" action="{{ url_for('export_orders') }}" style="display: inline;">
+                    <input type="hidden" name="filter_date" value="{{ filter_date }}">
+                    <button type="submit" class="btn btn-success">Download CSV Report</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle">
+        <a href="{{ url_for('toggle_dark_mode') }}">
+            <i class="{% if dark_mode %}fas fa-moon{% else %}fas fa-sun{% endif %}"></i>
+        </a>
+    </div>
+
+    <!-- Order History Header -->
+    <div class="head-container text-center py-2 d-flex flex-column align-items-center">
+        <h2 class="fw-bold mb-2">Order History</h2>
+        <img src="{{ url_for('static', filename='logo3.png') }}" alt="Order History Logo" class="order-history-logo">
+    </div>
+
+    <!-- Toggle Button for Filters -->
+    <div class="container text-center mt-3">
+        <button id="toggleFilters" class="btn btn-info btn-sm">Show Filters</button>
+    </div>
+
+    <!-- Filters Section -->
+    <div id="filters" class="container mt-3" style="display: none;">
+        <div class="filter-container">
+            <form method="GET" action="{{ url_for('view_orders') }}" class="d-flex flex-column align-items-center" onsubmit="hideFilters()">
+                <label for="filter_date" class="fw-bold">Specific Delivery <strong>Day</strong>:</label>
+                <input type="date" id="filter_date" name="filter_date" value="{{ filter_date or '' }}" class="form-control w-50">
+                <button type="submit" class="btn btn-primary btn-sm mt-2">Filter</button>
+            </form>
+        </div>
+<hr>
+        <div class="filter-container mt-3">
+            <form method="GET" action="{{ url_for('view_orders') }}" class="d-flex flex-column align-items-center" onsubmit="hideFilters()">
+                <label for="start_date" class="fw-bold">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}" class="form-control w-50">
+                <label for="end_date" class="fw-bold mt-2">End Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}" class="form-control w-50">
+                <button type="submit" class="btn btn-primary btn-sm mt-2">Filter by Date Range</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="container mt-4">
+        {% if formatted_orders %}
+            {% if filter_date %}
+                <h3 class="text-center fw-bold">Orders for {{ filter_date }}</h3>
+            {% else %}
+                <h3 class="text-center fw-bold">Orders for the selected date range</h3>
+            {% endif %}
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Customer</th>
+                        <th>Order Number</th>
+                        <th>5kg</th>
+                        <th>9kg</th>
+                        <th>14kg</th>
+                        <th>19kg</th>
+                        <th>19kg FLT</th>
+                        <th>48kg SV</th>
+                        <th>48kg DV</th>
+                        <th>Delivery Date</th>
+                        <th>Comment</th>
+                        <th>User</th>
+                        <th>Timestamp</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in formatted_orders %}
+                        <tr>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.kg_5 }}</td>
+                            <td>{{ order.kg_9 }}</td>
+                            <td>{{ order.kg_14 }}</td>
+                            <td>{{ order.kg_19 }}</td>
+                            <td>{{ order.kg_19_flt }}</td>
+                            <td>{{ order.kg_48_sv }}</td>
+                            <td>{{ order.kg_48_dv }}</td>
+                            <td>{{ order.delivery_date }}</td>
+                            <td>{{ order.comments }}</td>
+                            <td>{{ order.user }}</td>
+                            <td>{{ order.timestamp }}</td>
+                            <td class="fw-bold" style="color: {% if order.status == 'Invoiced' %}green{% elif order.status == 'Completed' %}blue{% else %}red{% endif %};">
+                                {{ order.status }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-center">No orders to display.</p>
+        {% endif %}
+    </div>
+
+    <!-- Totals Section -->
+    {% if formatted_orders %}
+        <div class="container mt-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Totals for {{ filter_date }}</h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">5kg: <strong>{{ totals['5kg'] }}</strong></li>
+                    <li class="list-group-item">9kg: <strong>{{ totals['9kg'] }}</strong></li>
+                    <li class="list-group-item">14kg: <strong>{{ totals['14kg'] }}</strong></li>
+                    <li class="list-group-item">19kg: <strong>{{ totals['19kg'] }}</strong></li>
+                    <li class="list-group-item">19kg (FLT): <strong>{{ totals['19kg_flt'] }}</strong></li>
+                    <li class="list-group-item">48kg (SV): <strong>{{ totals['48_sv'] }}</strong></li>
+                    <li class="list-group-item">48kg (DV): <strong>{{ totals['48_dv'] }}</strong></li>
+                    <li class="list-group-item text-danger fw-bold">LPG TOTAL: {{ total_weight }}</li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Footer Logos -->
+    <div class="footer-logo-container">
+        <img width="100px" src="{{ url_for('static', filename='logo3.png') }}" alt="Footer Logo" />
+    </div>
+
+    <!-- JavaScript for Filters -->
+    <script>
+        const toggleButton = document.getElementById("toggleFilters");
+        const filters = document.getElementById("filters");
+
+        if (localStorage.getItem("filtersVisible") === "true") {
+            filters.style.display = "block";
+            toggleButton.textContent = "Hide Filters";
+        }
+
+        toggleButton.addEventListener("click", function() {
+            if (filters.style.display === "none") {
+                filters.style.display = "block";
+                toggleButton.textContent = "Hide Filters";
+                localStorage.setItem("filtersVisible", "true");
+            } else {
+                filters.style.display = "none";
+                toggleButton.textContent = "Show Filters";
+                localStorage.setItem("filtersVisible", "false");
+            }
+        });
+
+        // Function to hide filters after form submission
+        function hideFilters() {
+            filters.style.display = "none";
+            toggleButton.textContent = "Show Filters";
+            localStorage.setItem("filtersVisible", "false");
+        }
+    </script>
+</body>
+</html>

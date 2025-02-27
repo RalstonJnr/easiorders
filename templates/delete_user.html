@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete User</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="{% if dark_mode %}dark-mode{% endif %}">
+
+    <!-- Loading screen -->
+    <div id="loading-screen">
+        <img src="{{ url_for('static', filename='easiorders.png') }}" alt="Loading..." id="loading-image">
+    </div>
+
+    <div class="container" id="main-content" style="display: none;">
+        <h1 class="my-4">Are you sure you want to delete {{ user.username }}?</h1>
+        <p><strong>This action cannot be undone.</strong></p>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="admin_password">Admin Password</label>
+                <input type="password" class="form-control" id="admin_password" name="admin_password" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Delete User</button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+
+        <div class="footer-logo-container text-center">
+            <img width="100px" src="{{ url_for('static', filename='logo3.png') }}" alt="Footer Logo">
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            var loadingScreen = document.getElementById('loading-screen');
+            var mainContent = document.getElementById('main-content');
+
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            if (mainContent) {
+                mainContent.style.display = 'block';
+            }
+        };
+    </script>
+
+</body>
+</html>

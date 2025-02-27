@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- jQuery (required for Bootstrap's JS functionality) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	
+	<!-- Importing Static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<!-- Importing Bootstrap and Other Modules -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   <!-- In the <head> tag (for Bootstrap CSS) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
+   
+
+  <title>Home Page</title>
+</head>
+
+<body class="{% if dark_mode %}dark-mode{% endif %}" class="duplicate-warning">
+    <div class="theme-toggle">
+        <a href="{{ url_for('toggle_dark_mode') }}">
+            <i class="{% if dark_mode %}fas fa-moon{% else %}fas fa-sun{% endif %}"></i>
+        </a>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen">
+        <img src="{{ url_for('static', filename='easiorders.png') }}" alt="Loading..." id="loading-image">
+    </div>
+	
+	
+	        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="alert-container">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+			
+<div class="{% if dark_mode %}dark-mode{% endif %}">
+    <!-- Start of Top Header Section -->    
+    <nav class="navbar navbar-expand-lg navbar-light bg-light p-3">
+        <div class="container-fluid">
+            <!-- Logo as a link to the home page -->
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='easiorders.png') }}" alt="logo" width="100" />
+            </a>
+
+            <!-- User Greeting -->
+            <div class="navbar-text">
+                {% if current_user.is_authenticated %}
+                    <h5 class="mb-0">Welcome, {{ current_user.username }}!</h5>
+                {% else %}
+                    <h5 class="mb-0">Welcome to Easi Orders</h5>
+                {% endif %}
+            </div>
+
+            <!-- Buttons Section -->
+            {% if current_user.is_authenticated %}
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if current_user.role == 1 %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning">Admin Dashboard</a>
+                    {% endif %}
+                    <a class="btn btn-primary" href="{{ url_for('view_orders') }}">View Orders by Date</a>
+                    
+                    <!-- User Dropdown Menu (aligned to the right) -->
+                    <div class="dropdown ml-auto">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ current_user.username }}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a>
+                            <a class="dropdown-item" href="{{ url_for('change_password') }}">Change Password</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+    <!-- End of Header Section -->
+</div>
+
+<!-- Bootstrap 4 JavaScript and dependencies -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+  <!-- Main Content -->
+  
+	<!-- Button to Toggle Order Section -->
+<div id="main-content" style="display: none;">
+    <!-- Disable the button for viewers (role not in [0, 1]) -->
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#orderForm" aria-expanded="false" aria-controls="orderForm" {% if current_user.role not in [0, 1] %}disabled{% endif %}>
+        Order Form
+    </button>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const button = document.querySelector("[data-bs-target='#orderForm']");
+        const form = document.getElementById("orderForm");
+
+        button.addEventListener("click", function () {
+            setTimeout(() => {
+                form.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 300); // Delay to ensure collapse animation finishes
+        });
+    });
+</script>
+<!-- Start of Order Section -->	
+<div class="collapse mt-3" id="orderForm">
+    <div class="card card-body">
+		<!-- Div to Display Order Header and Image-->
+
+<div class="head-container text-center py-3">
+    <h1 class="display-6 fw-bold">Order</h1>
+    <img src="{{ url_for('static', filename='easiorders.png') }}" alt="Order Logo" class="order-book-logo">
+</div>
+<!-- Start of form to capture Order --> 
+<div class="form-container">
+    <form method="POST" action="/">
+        <!-- Customer Name (required) -->
+        <label for="customer_name">Customer Name:</label>
+        <input class="form-control" type="text" name="customer_name" required>
+        <br><br>
+
+        <!-- Size & Quantity Selection (required) -->
+        <div id="order-items">
+            <div class="order-item">
+                <label for="size_0">Size:</label>
+                <select id="size_0" name="size[]" required>
+                    <option value="5kg">5Kg</option>
+                    <option value="9kg">9Kg</option>
+                    <option value="14kg">14Kg</option>
+                    <option value="19kg">19Kg</option>
+                    <option value="19kgFLT">19kg FLT</option>
+                    <option value="48kgSV">48kg SV</option>
+                    <option value="48kgDV">48kg DV</option>
+                </select>
+
+                <label for="quantity_0">Quantity:</label>
+                <select id="quantity_0" name="quantity[]" required>
+                    {% for i in range(1, 501) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Remove an item -->
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)">Remove</button>
+            </div>
+        </div>
+
+        <!-- Add an item -->
+        <button type="button" class="btn btn-success" onclick="addItem()">Add Item</button>
+        <br><br>
+
+        <!-- Delivery date selection (required) -->
+        <label for="delivery_date">Delivery Date:</label>
+        <input type="date" name="delivery_date" id="delivery_date" required>
+        <br><br>
+
+        <!-- Order number -->
+        <label for="order_number">Purchase Order Number:</label>
+        <input class="form-control" type="text" name="order_number">
+        <br><br>
+
+        <!-- Comments -->
+        <label for="comments">Additional Comments:</label>
+        <input class="form-control" type="text" name="comments">
+        <br><br>
+
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary">Submit Order</button>
+    </form>
+</div>
+
+</div>
+</div>
+
+{% if warning %}
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="overlay" style="display: block;"></div>
+
+    <!-- Modal -->
+    <div id="duplicateOrderModal" class="modal-dialog" style="display: block;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Duplicate Order Warning</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Customer Name:</strong> {{ customer_name }}</p>
+                <p><strong>Order Items:</strong> {{ order_items }}</p>
+                <p><strong>Delivery Date:</strong> {{ delivery_date }}</p>
+                <p>This order already exists. Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cancelOrder()">No, Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitOrder()">Yes, Submit Order</button>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Order Form (Hidden) -->
+<form id="submitOrderForm" action="{{ url_for('confirm_duplicate') }}" method="POST" style="display: none;">
+    <input type="hidden" name="customer_name" value="{{ customer_name }}">
+    <input type="hidden" name="order_number" value="{{ order_number }}">
+    <input type="hidden" name="delivery_date" value="{{ delivery_date }}">
+    <input type="hidden" name="comments" value="{{ comments }}">
+
+    <!-- Hidden fields for sizes and quantities -->
+    {% for size, quantity in sizes_quantities %}
+        <input type="hidden" name="size[]" value="{{ size }}">
+        <input type="hidden" name="quantity[]" value="{{ quantity }}">
+    {% endfor %}
+</form>
+
+<!-- JavaScript for Modal Handling -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Check if the warning variable exists, indicating a duplicate order
+        if (document.body.classList.contains("duplicate-warning")) {
+            showModal();
+        }
+    });
+
+    function showModal() {
+        document.getElementById("duplicateOrderModal").style.display = "block";
+        document.getElementById("modalOverlay").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("duplicateOrderModal").style.display = "none";
+        document.getElementById("modalOverlay").style.display = "none";
+    }
+
+    function submitOrder() {
+        document.getElementById('submitOrderForm').submit();
+    }
+
+    function cancelOrder() {
+        closeModal();
+        window.location.href = "{{ url_for('index') }}"; // Redirect to main page
+    }
+</script>
+
+<!-- Dark Mode Handling -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const darkMode = sessionStorage.getItem("darkMode") === "true";
+        if (darkMode) {
+            document.body.classList.add("dark-mode");
+        }
+    });
+
+    function toggleDarkMode() {
+        const isDarkMode = document.body.classList.toggle("dark-mode");
+        sessionStorage.setItem("darkMode", isDarkMode);
+
+        const toggleButton = document.getElementById("darkModeToggle");
+        if (toggleButton) {
+            toggleButton.textContent = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
+        }
+    }
+</script>
+
+
+<!-- CSS for the overlay -->
+<style>
+    /* Full screen overlay to disable interaction with the rest of the page */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        z-index: 9998; /* Make sure it sits behind the modal */
+    }
+
+    /* Modal content styling */
+    .modal-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999; /* Make sure the modal is above the overlay */
+        background: white; /* Light background for the modal */
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+    }
+
+    .modal-content {
+        padding: 20px;
+        color: black; /* Default text color for light mode */
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode .modal-dialog {
+        background-color: #333; /* Dark background for the modal */
+    }
+
+    body.dark-mode .modal-content {
+        color: black; /* Set text color to white for dark mode */
+    }
+	
+	body.dark-mode .modal-title {
+        color: black; /* Set text color to white for dark mode */
+    }
+
+    body.dark-mode .modal-body {
+        color: black; /* Set text color to white for dark mode */
+    }
+
+    body.dark-mode .modal-header {
+        border-bottom: 1px solid #444; /* Darker header for dark mode */
+        color: white; /* Ensure text is white in dark mode */
+    }
+
+    body.dark-mode .overlay {
+        background-color: rgba(0, 0, 0, 0.8); /* Darker overlay background */
+    }
+
+    body.dark-mode {
+        background-color: #121212; /* Dark background for the entire page */
+        color: white; /* Light text color for the page */
+    }
+
+    /* Additional dark mode styles for buttons */
+    body.dark-mode .btn-secondary {
+        background-color: #555; /* Darker secondary button */
+        color: white;
+    }
+
+    body.dark-mode .btn-primary {
+        background-color: #007bff; /* Blue button in dark mode */
+        color: white;
+    }
+
+    /* Default light mode styling */
+    body {
+        background-color: white; /* Light background */
+        color: black; /* Dark text color */
+    }
+
+</style>
+
+<br>
+<br>
+<!-- Order Book Header Section -->
+<div class="head-container text-center py-3">
+    <h1 class="display-6 fw-bold">Order Book</h1>
+    <img src="{{ url_for('static', filename='logo3.png') }}" alt="Order Book Logo" class="order-book-logo">
+</div>
+<!-- Search and Filter Section -->
+<div class="container mt-5">
+    <div class="d-flex justify-content-between mb-4">
+        <!-- Toggle Filters Button -->
+        <button id="toggleFiltersButton" class="btn btn-outline-info btn-sm">Toggle Filters</button>
+    </div>
+
+    <!-- Combined Search and Filter Form -->
+    <div id="toggleDiv" class="card p-4 shadow-lg" style="display: none;">
+        <form method="GET" action="{{ url_for('index') }}" id="filtersForm">
+            <div class="row mb-3">
+                <!-- Search by Name -->
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Customer Name</label>
+                    <input type="text" name="search" class="form-control" placeholder="Customer Name"
+                        value="{{ request.args.get('search', '') }}" />
+                </div>
+
+                <!-- Purchase Order Search -->
+                <div class="col-md-3">
+                    <label for="order_number" class="form-label">PO Number</label>
+                    <input type="text" name="order_number" class="form-control" placeholder="Purchase Order"
+                        value="{{ request.args.get('order_number', '') }}" />
+                </div>
+
+                <!-- Flag/Meter Filter -->
+                <div class="col-md-3">
+                    <label for="filter" class="form-label">Filter by Flag/Meter</label>
+                    <select name="filter" class="form-select">
+                        <option value="">All Orders</option>
+                        <option value="flag" {% if request.args.get('filter') == 'flag' %}selected{% endif %}>Flagged Orders</option>
+                        <option value="meter" {% if request.args.get('filter') == 'meter' %}selected{% endif %}>Meter Orders</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="Not Invoiced" {% if request.args.get('status') == "Not Invoiced" %}selected{% endif %}>Not Invoiced</option>
+                        <option value="Invoiced" {% if request.args.get('status') == "Invoiced" %}selected{% endif %}>Invoiced</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <!-- User Filter -->
+                <div class="col-md-3">
+                    <label for="user_id" class="form-label">User</label>
+                    <select name="user_id" class="form-select">
+                        <option value="">All Users</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {% if request.args.get('user_id') == user.id|string %}selected{% endif %}>
+                            {{ user.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+
+			<form method="GET" action="{{ url_for('index') }}">
+					<!-- Date Range -->
+					<div class="col-md-3">
+						<label for="date_range" class="form-label">Date Range</label>
+						<select name="date_range" id="date_range" class="form-select" onchange="toggleDateInputs()">
+							<option value="">Select Date Range</option>
+							<option value="last_7_days" {% if date_range == 'last_7_days' %}selected{% endif %}>Last 7 Days</option>
+							<option value="this_month" {% if date_range == 'this_month' %}selected{% endif %}>This Month</option>
+							<option value="custom_range" {% if date_range == 'custom_range' %}selected{% endif %}>Custom Range</option>
+						</select>
+					</div>
+					<br>
+
+					<!-- Start Date (Hidden by default) -->
+					<div class="col-md-3" id="start_date_div" style="display: {% if date_range == 'custom_range' %}block{% else %}none{% endif %};">
+						<label for="start_date" class="form-label">Start Date</label>
+						<input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+					</div>
+
+					<!-- End Date (Hidden by default) -->
+					<div class="col-md-3" id="end_date_div" style="display: {% if date_range == 'custom_range' %}block{% else %}none{% endif %};">
+						<label for="end_date" class="form-label">End Date</label>
+						<input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+					</div>
+					<br>
+					<!-- Filter Actions -->
+					<div class="d-flex justify-content-between">
+						<button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
+						<a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm mt-3 ms-2" onclick="resetFilters(event)">Reset Filters</a>
+					</div>
+			</form>
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var dateRange = document.getElementById("date_range");
+    var startDateDiv = document.getElementById("start_date_div");
+    var endDateDiv = document.getElementById("end_date_div");
+    var startDateInput = document.getElementById("start_date");
+    var endDateInput = document.getElementById("end_date");
+
+    // Function to toggle the visibility of start and end date fields
+    function toggleDateInputs() {
+        if (dateRange.value === "custom_range") {
+            startDateDiv.style.display = "block";
+            endDateDiv.style.display = "block";
+        } else {
+            startDateDiv.style.display = "none";
+            endDateDiv.style.display = "none";
+            startDateInput.value = "";  // Clear values when switching
+            endDateInput.value = "";
+        }
+    }
+
+    // Ensure the correct state is set on page load (Persist selections)
+    if (dateRange.value === "custom_range") {
+        startDateDiv.style.display = "block";
+        endDateDiv.style.display = "block";
+    }
+
+    // Attach event listener
+    dateRange.addEventListener("change", toggleDateInputs);
+});
+
+    // Reset Filters function
+    function resetFilters(event) {
+        event.preventDefault();  // Prevent the default link behavior
+        fetch('{{ url_for("reset_filters") }}', { method: 'POST' })
+            .then(() => {
+                window.location.href = '{{ url_for("index") }}';  // Redirect to orders page
+            });
+    }
+</script>
+
+
+
+
+
+<!-- Hint for the hover effect -->
+<!-- <div class="pagination-hint">Hover here to view pagination</div> -->
+
+<div id="paginationSection" class="pagination-container">
+    <!-- Hidden content that will appear on hover -->
+    <div class="pagination-content d-flex justify-content-between align-items-center">
+        <div>
+            {% if prev_url %}
+                <a href="{{ prev_url }}" class="btn btn-outline-secondary btn-sm">Previous</a>
+            {% endif %}
+            {% if next_url %}
+                <a href="{{ next_url }}" class="btn btn-outline-secondary btn-sm">Next</a>
+            {% endif %}
+        </div>
+        <form method="GET" action="{{ url_for('index') }}" class="d-flex align-items-center">
+            <label for="per_page" class="me-2 mb-0">Orders per page:</label>
+            <select name="per_page" id="per_page" class="form-select form-select-sm me-2" aria-label="Select orders per page">
+                <option value="5" {% if per_page == 5 %} selected {% endif %}>5</option>
+                <option value="10" {% if per_page == 10 %} selected {% endif %}>10</option>
+                <option value="20" {% if per_page == 20 %} selected {% endif %}>20</option>
+                <option value="50" {% if per_page == 50 %} selected {% endif %}>50</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+        </form>
+    </div>
+</div>
+
+
+<style>
+/* The container that holds both the pagination content and the hint */
+.pagination-container {
+    position: relative; /* Allow child elements (hint) to be positioned relative to this container */
+    margin-top: 20px; /* Add space to separate from other content */
+}
+
+/* Initially hide the pagination content (buttons and form) */
+.pagination-content {
+    opacity: 0; /* Hide content but keep the area interactive */
+    pointer-events: none; /* Disable clicks/events when hidden */
+    width: 100%; /* Ensure it stretches across available space */
+    flex-wrap: wrap; /* Allow content to wrap if needed */
+    transition: opacity 0.3s ease-in-out; /* Smooth transition for showing content */
+}
+
+/* Show pagination content when the container is hovered */
+.pagination-container:hover .pagination-content {
+    opacity: 1; /* Make content visible */
+    pointer-events: all; /* Enable clicks/events when visible */
+}
+
+/* Styling for the hint */
+.pagination-hint {
+    position: absolute; /* Position the hint relative to the pagination-container */
+    top: 60%; /* Position it slightly above the pagination content */
+    left: 70%; /* Center the hint horizontally */
+    transform: translateX(-50%); /* Correct the centering of the hint */
+    background-color: #f8f9fa;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: black;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 10; /* Ensure the hint appears above other elements */
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .pagination-content {
+        flex-direction: column; /* Stack pagination buttons and form vertically on small screens */
+    }
+
+    .pagination-hint {
+        font-size: 14px; /* Slightly larger hint text for readability on small screens */
+    }
+}
+</style>
+
+<style>
+    /* Style for the hamburger icon */
+    #sortButton {
+      font-size: 24px;  /* Size of the hamburger icon */
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+
+
+</div>
+
+<!-- order book table -->
+<div class="orders-container">
+  <div align="center" class="table2">
+    <table id="resizable-table" class="container">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Order Number</th>
+          <th>5kg</th>
+          <th>9kg</th>
+          <th>14kg</th>
+          <th>19kg</th>
+          <th>19kg FLT</th>
+          <th>48kg SV</th>
+          <th>48kg DV</th>
+
+          <!-- Sorting Form for Delivery Date -->
+          <th>
+            Delivery Date
+            <form method="POST" action="{{ url_for('sort_orders') }}" style="display: inline;">
+              <button type="submit" name="sort_orders" id="sortButton">
+                {% if sort_desc %}
+                  <i class="fa fa-sort-down"></i>  <!-- Downward arrow -->
+                {% else %}
+                  <i class="fa fa-sort-up"></i>  <!-- Upward arrow -->
+                {% endif %}
+              </button>
+            </form>
+          </th>
+
+          <th>Comment</th>
+          <th>User</th>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>Flag / Meter</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr id="order-{{ order.id }}"
+            style="background-color: {% if order.flag %}lightcoral{% elif order.meter %}lightblue{% elif order.duplicate %}lightgray{% else %}white{% endif %};"
+            {% if current_user.role not in [0, 1] %}class="viewer-row"{% endif %}>
+          <td>{{ order.customer_name }}</td>
+          <td>{{ order.order_number }}</td>
+          <td>{{ order.kg_5 }}</td>
+          <td>{{ order.kg_9 }}</td>
+          <td>{{ order.kg_14 }}</td>
+          <td>{{ order.kg_19 }}</td>
+          <td>{{ order.kg_19_flt }}</td>
+          <td>{{ order.kg_48_sv }}</td>
+          <td>{{ order.kg_48_dv }}</td>
+          <td>{{ order.delivery_date }}</td>
+          <td>{{ order.comments }}</td>
+          <td>{{ order.user }}</td>
+          <td>{{ order.timestamp }}</td>
+          <td class="status">
+            <div style="color: {% if order.status.strip() == 'Invoiced' %}green{% else %}red{% endif %};">
+              {{ order.status }}
+            </div>
+          </td>
+
+          <!-- Action Buttons -->
+          <td>
+            {% if order.status == 'Not Invoiced' %}
+              <form method="POST" action="{{ url_for('invoiced', order_id=order.id) }}">
+                <button type="submit" class="btn btn-success" {% if current_user.role not in [0, 1] %}disabled{% endif %}>Mark as Invoiced</button>
+              </form>
+            {% elif order.status == 'Invoiced' %}
+              <form action="{{ url_for('not_invoiced', order_id=order.id) }}" method="GET">
+                <button type="submit" class="btn btn-danger" {% if current_user.role not in [0, 1] %}disabled{% endif %}>Unmark as Invoiced</button>
+              </form>
+            {% endif %}
+          </td>
+
+          <!-- Flag / Meter Checkboxes -->
+          <td>
+            <form method="POST" action="{{ url_for('update_flag_meter', order_id=order.id) }}">
+              <label for="flag-{{ order.id }}">Flag</label>
+              <input type="checkbox" name="flag" id="flag-{{ order.id }}" class="flag-checkbox" data-order-id="{{ order.id }}"
+                     {% if order.flag %}checked{% endif %} {% if current_user.role not in [0, 1] %}disabled{% endif %}><br>
+
+              <label for="meter-{{ order.id }}">Meter</label>
+              <input type="checkbox" name="meter" id="meter-{{ order.id }}" class="meter-checkbox" data-order-id="{{ order.id }}"
+                     {% if order.meter %}checked{% endif %} {% if current_user.role not in [0, 1] %}disabled{% endif %}><br>
+
+              <button type="submit" {% if current_user.role not in [0, 1] %}disabled{% endif %}>Save</button>
+            </form>
+          </td>
+
+          <!-- Edit and Delete Buttons -->
+          <td>
+            {% if order.status == 'Not Invoiced' and current_user.role !=2 %}
+              <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-warning">Edit Order</a>
+            {% elif order.status == 'Invoiced' %}
+              {% if current_user.role == 1 %}
+                <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-warning">Edit Order</a>
+              {% endif %}
+            {% endif %}
+
+            {% if current_user.role not in [0, 1] %}
+              <button class="btn btn-warning" disabled>Edit Order (Viewer)</button>
+            {% endif %}
+            
+            {% if current_user.role == 1 %}
+              <form action="{{ url_for('delete_confirm', order_id=order.id) }}" method="GET">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            {% else %}
+              <button class="btn btn-danger" disabled>Delete (Admin Only)</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+		
+	<!-- Function Buttons-->
+			<div>
+				<!-- View Orders
+					<a href="{{ url_for('view_orders') }}">
+					<button>View Orders by Date</button>
+					</a>-->
+				<!-- Download CSV Report Button as a form -->
+				<div class="footer-logo-container">
+					<form action="{{ url_for('generate') }}" method="get">
+						<button type="submit" class="btn btn-primary">Download CSV Report</button>
+					</form>
+				</div>
+			
+		<div> <!-- Logo's-->
+			
+    <!-- Footer Logos -->
+<div class="footer-logo-container">
+    <img width="100px" src="{{ url_for('static', filename='logo3.png') }}" alt="Footer Logo" />
+</div>
+	</div>
+</div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	
+<script>	
+	// Set min attribute to today's date
+document.addEventListener("DOMContentLoaded", function () {
+    let today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    document.getElementById("delivery_date").setAttribute("min", today);
+});
+</script>
+  <script>
+    // Event listener for the hamburger button click
+    document.getElementById('sortButton').addEventListener('click', function() {
+      // Fetch the sorted orders from Flask
+      fetch('/sort_orders')
+        .then(response => response.text())  // Expecting HTML as the response
+        .then(html => {
+          // Replace the table body with the sorted rows
+          document.getElementById('ordersTable').innerHTML = new DOMParser().parseFromString(html, 'text/html').querySelector('tbody').innerHTML;
+        })
+        .catch(error => {
+          console.error('Error fetching sorted orders:', error);
+        });
+    });
+  </script>
+	
+
+<script>
+<!-- document.getElementById('date_range').addEventListener('change', function() { -->
+    <!-- var customRange = document.getElementById('custom-range'); -->
+    <!-- if (this.value === 'custom_range') { -->
+        <!-- customRange.style.display = 'block'; -->
+    <!-- } else { -->
+        <!-- customRange.style.display = 'none'; -->
+    <!-- } -->
+<!-- }); -->
+
+// Handle custom "Clear" button functionality
+document.getElementById('clearButton').addEventListener('click', function() {
+    // Reset the select dropdown and custom date inputs
+    document.getElementById('dateRangeForm').reset();
+    
+    // Hide the custom date range section
+    var customRange = document.getElementById('custom-range');
+    customRange.style.display = 'none';
+
+    // Optionally reset the dropdown to its default state (if needed)
+    document.getElementById('date_range').value = '';  // You can set this to any default value if needed
+});
+</script>	
+	
+<!-- Javascript Code -->
+<script>
+    // On page load, get the current filter state from the URL
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status') || 'all'; // Default to 'all' if no filter is set
+    document.getElementById('status').value = status;
+
+    // Fetch the filtered orders from the Flask backend
+    function fetchFilteredOrders() {
+        const selectedStatus = document.getElementById('status').value;
+        fetch(`/get_orders?status=${selectedStatus}`)
+            .then(response => response.json())
+            .then(data => {
+                // Render the filtered orders
+                let ordersHTML = '';
+                data.forEach(order => {
+                    ordersHTML += `<p>${order.id} - ${order.status}</p>`;
+                });
+                document.getElementById('orderTable').innerHTML = ordersHTML;
+            });
+    }
+
+    // Handle form submission (filtering)
+    document.getElementById('filterForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent page reload
+        const selectedStatus = document.getElementById('status').value;
+        window.location.search = `?status=${selectedStatus}`; // Apply filter to URL
+    });
+
+    // Initially fetch the filtered orders on page load
+    fetchFilteredOrders();
+</script>
+
+
+<!-- Javascript Code -->
+<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			document.querySelectorAll(".status").forEach(function (statusCell) {
+				if (statusCell.textContent.trim() === "Invoiced") {
+					statusCell.parentElement.classList.add("invoiced"); // Applies to the row
+				}
+			});
+		});
+
+
+        // Get references to the buttons and the div
+        const toggleButton = document.getElementById('toggleButton');
+        const toggleDiv = document.getElementById('toggleDiv');
+        const closeButton = document.getElementById('closeButton');
+
+        // Check if the div was previously open (stored in localStorage)
+        if (localStorage.getItem('toggleState') === 'open') {
+            toggleDiv.style.display = 'block'; // Show the div
+        }
+
+        // Toggle the div visibility when the toggle button is clicked
+        toggleButton.addEventListener('click', function() {
+            if (toggleDiv.style.display === 'none') {
+                toggleDiv.style.display = 'block'; // Show the div
+                localStorage.setItem('toggleState', 'open'); // Store the state
+            } else {
+                toggleDiv.style.display = 'none'; // Hide the div
+                localStorage.setItem('toggleState', 'closed'); // Store the state
+            }
+        });
+
+        // Close the div when the close button is clicked
+        closeButton.addEventListener('click', function() {
+            toggleDiv.style.display = 'none'; // Hide the div
+            localStorage.setItem('toggleState', 'closed'); // Store the state
+        });
+</script>
+
+<!-- Javascript Code -->
+<script>
+	
+        window.onload = function() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+        };
+
+        function addItem() {
+            const orderItems = document.getElementById('order-items');
+            const newItem = document.createElement('div');
+            newItem.className = 'order-item';
+            newItem.innerHTML = `
+                <label for="size">Size:</label>
+                        <select name="size[]" required>
+                            <option value="5kg">5Kg</option>
+                            <option value="9kg">9Kg</option>
+                            <option value="14kg">14Kg</option>
+                            <option value="19kg">19Kg</option>
+                            <option value="19kgFLT">19kg FLT</option>
+                            <option value="48kgSV">48kg SV</option>
+                            <option value="48kgDV">48kg DV</option>
+                        </select>
+
+                <label for="quantity">Quantity:</label>
+                <select name="quantity[]" required>
+                    ${[...Array(501).keys()].slice(1).map(i => `<option value="${i}">${i}</option>`).join('')}
+                </select>
+
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)">Remove</button>
+            `;
+            orderItems.appendChild(newItem);
+        }
+
+        function removeItem(button) {
+            button.parentElement.remove();
+        }
+</script>
+  <script>
+        // Establish WebSocket connection to the server
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        
+        // Listen for incoming messages from the server
+        socket.on('response', function(data) {
+            console.log('Received from server: ' + data.data);
+        });
+        
+        // Listen for real-time updates
+        socket.on('update', function(data) {
+            const messagesDiv = document.getElementById('messages');
+            const message = document.createElement('p');
+            message.textContent = data.data;
+            messagesDiv.appendChild(message);
+        });
+        
+        // Send a message to the server when the button is clicked
+        document.getElementById('send-update').onclick = function() {
+            socket.emit('message', 'Hello Server!');
+        };
+    </script>
+<script>
+    function togglePriority(orderId) {
+        fetch(`/toggle_priority/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let row = document.getElementById(`order-${orderId}`);
+                let button = row.querySelector("button");
+                let badge = row.querySelector(".badge");
+
+                // Toggle UI changes
+                if (data.priority) {
+                    row.classList.add("high-priority");
+                    button.classList.remove("btn-secondary");
+                    button.classList.add("btn-danger");
+                    button.innerText = "Unmark Priority";
+                    badge.classList.remove("bg-secondary");
+                    badge.classList.add("bg-danger");
+                    badge.innerText = "High";
+                } else {
+                    row.classList.remove("high-priority");
+                    button.classList.remove("btn-danger");
+                    button.classList.add("btn-secondary");
+                    button.innerText = "Mark as Priority";
+                    badge.classList.remove("bg-danger");
+                    badge.classList.add("bg-secondary");
+                    badge.innerText = "Normal";
+                }
+            }
+        });
+    }
+</script>
+	
+<!-- JavaScript for toggling filters and pages -->
+<script>
+    // Toggle Filters Form
+    document.getElementById("toggleFiltersButton").addEventListener("click", function() {
+        var toggleDiv = document.getElementById("toggleDiv");
+        toggleDiv.style.display = toggleDiv.style.display === "none" ? "block" : "none";
+    });
+
+    // Close Filters
+    document.getElementById("closeButton").addEventListener("click", function() {
+        document.getElementById("toggleDiv").style.display = "none";
+    });
+
+    // Toggle Pages Section
+    document.getElementById("togglePagesButton").addEventListener("click", function() {
+        var pagesDiv = document.getElementById("paginationDiv");
+        pagesDiv.style.display = pagesDiv.style.display === "none" ? "block" : "none";
+    });
+
+    // Handle custom date range display
+    document.getElementById("date_range").addEventListener("change", function() {
+        var customRange = document.getElementById("custom-range");
+        if (this.value === "custom_range") {
+            customRange.style.display = "block";
+        } else {
+            customRange.style.display = "none";
+        }
+    });
+</script>	
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Loop through each checkbox and restore state from localStorage
+    document.querySelectorAll(".flag-checkbox, .meter-checkbox").forEach(checkbox => {
+        const orderId = checkbox.dataset.orderId;
+        const row = checkbox.closest("tr");  // Get the row for color change
+        const flagCheckbox = row.querySelector(".flag-checkbox");
+        const meterCheckbox = row.querySelector(".meter-checkbox");
+
+        // Restore state from localStorage (if exists)
+        if (localStorage.getItem(`flag-${orderId}`)) {
+            flagCheckbox.checked = JSON.parse(localStorage.getItem(`flag-${orderId}`));
+        }
+        if (localStorage.getItem(`meter-${orderId}`)) {
+            meterCheckbox.checked = JSON.parse(localStorage.getItem(`meter-${orderId}`));
+        }
+
+        // Update background color based on checkbox state
+        updateRowColor(flagCheckbox, meterCheckbox, row);
+
+        // Add event listener to save checkbox state in localStorage on change
+        checkbox.addEventListener("change", function() {
+            localStorage.setItem(`flag-${orderId}`, JSON.stringify(flagCheckbox.checked));
+            localStorage.setItem(`meter-${orderId}`, JSON.stringify(meterCheckbox.checked));
+
+            // Update the row color based on the state
+            updateRowColor(flagCheckbox, meterCheckbox, row);
+        });
+    });
+});
+
+// Function to update the background color of the row based on checkbox state
+function updateRowColor(flagCheckbox, meterCheckbox, row) {
+    if (flagCheckbox.checked) {
+        row.style.backgroundColor = "red";
+    } else if (meterCheckbox.checked) {
+        row.style.backgroundColor = "lightblue";
+    } else {
+        row.style.backgroundColor = "white";
+    }
+}
+
+// Clear button functionality to uncheck the checkboxes and reset color
+function clearCheckboxes(orderId) {
+    const row = document.querySelector(`#order-${orderId}`);
+    const flagCheckbox = row.querySelector(".flag-checkbox");
+    const meterCheckbox = row.querySelector(".meter-checkbox");
+
+    // Uncheck the checkboxes
+    flagCheckbox.checked = false;
+    meterCheckbox.checked = false;
+
+    // Reset background color to white
+    row.style.backgroundColor = "white";
+
+    // Clear the localStorage for this order
+    localStorage.removeItem(`flag-${orderId}`);
+    localStorage.removeItem(`meter-${orderId}`);
+}
+</script>
+
+
+
+    {% block content %}{% endblock %}
+	
+</body>
+</html>
+

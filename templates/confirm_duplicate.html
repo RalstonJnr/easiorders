@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Duplicate Order</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Duplicate Order Warning</h2>
+        <p><strong>Customer Name:</strong> {{ customer_name }}</p>
+        <p><strong>Order Items:</strong> {{ order_items }}</p>
+        <p><strong>Delivery Date:</strong> {{ delivery_date }}</p>
+        <p>This order already exists. Do you want to proceed with it?</p>
+
+        <form method="POST">
+            <button type="submit" class="btn btn-primary">Yes, Submit Order</button>
+        </form>
+
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">No, Cancel</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+        }
+        .dark-mode .card-header {
+            background-color: #333;
+            color: #ffffff;
+        }
+        .dark-mode .form-control {
+            background-color: #333;
+            color: #ffffff;
+            border: 1px solid #555;
+        }
+        .dark-mode label {
+            color: #ffffff;
+        }
+        .dark-mode .btn-primary {
+            background-color: #0066cc;
+            border-color: #005bb5;
+            color: #ffffff;
+        }
+        .dark-mode .btn-secondary {
+            background-color: #444;
+            border-color: #666;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="{{ 'dark-mode' if dark_mode else '' }}">
+
+    <div class="container mt-5">
+        <h3>Edit Your Profile</h3>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                Edit Your Profile
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_profile') }}">
+                    <div class="form-group">
+                        <label for="full_name">Full Name</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="surname">Surname</label>
+                        <input type="text" class="form-control" id="surname" name="surname" value="{{ user.surname }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cell_number">Cell Number</label>
+                        <input type="text" class="form-control" id="cell_number" name="cell_number" value="{{ user.cell_number }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+
+                <a href="{{ url_for('profile') }}" class="btn btn-secondary mt-3">Back to Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 4 JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

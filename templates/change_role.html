@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change User Role</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        /* Light Mode Styles */
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: white;
+        }
+
+        body.dark-mode .container {
+            background-color: #1e1e1e;
+            color: white;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="{% if dark_mode %}dark-mode{% endif %}">
+
+<div class="container">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <h1 class="my-4">Change Role for {{ user.username }}</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="role">Role</label>
+					<br>
+            <select class="form-control" id="role" name="role">
+                <option value="0" {% if user.role == 0 %}selected{% endif %}>Normal User</option>
+                <option value="1" {% if user.role == 1 %}selected{% endif %}>Admin</option>
+                <option value="2" {% if user.role == 2 %}selected{% endif %}>Viewer</option>
+            </select>
+        </div>
+				<br>
+        <div class="form-group">
+            <label for="admin_password">Admin Password</label>
+            <input type="password" class="form-control" id="admin_password" name="admin_password" required>
+        </div>
+		<br>
+		<br>
+        <button type="submit" class="btn btn-primary">Update Role</button>
+    </form>
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="footer-logo-container">
+    <img width="100px" src="{{ url_for('static', filename='logo3.png') }}" alt="Footer Logo" style="margin: 0 auto;" />
+</div>
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+        }
+        .dark-mode .card-header {
+            background-color: #333;
+            color: #ffffff;
+        }
+        .dark-mode .card-text {
+            color: #ffffff;
+        }
+        .dark-mode .alert {
+            background-color: #222;
+            color: #ffffff;
+            border-color: #444;
+        }
+        .dark-mode .btn-warning {
+            background-color: #d4a30d;
+            border-color: #c89400;
+            color: #ffffff;
+        }
+        .dark-mode .btn-secondary {
+            background-color: #444;
+            border-color: #666;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="{{ 'dark-mode' if dark_mode else '' }}">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="container mt-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ user.username }}'s Profile</h3> <!-- Dynamic Title based on User -->
+            </div>
+            <div class="card-body">
+                <p class="card-text"><strong>Full Name:</strong> {{ user.full_name }}</p>
+                <p class="card-text"><strong>Surname:</strong> {{ user.surname }}</p>
+                <p class="card-text"><strong>Cell Number:</strong> {{ user.cell_number }}</p>
+                <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                <p class="card-text"><strong>Role:</strong>    
+                    {% if user.role == 1 %}
+                        Admin
+                    {% elif user.role == 0 %}
+                        Normal User
+                    {% else %}
+                        Viewer
+                    {% endif %}
+                </p>
+
+                {% if current_user.id == user.id or current_user.role == 1 %}
+                    <!-- Allow editing and password change for the current user or admins -->
+                    <a href="{{ url_for('change_password') }}" class="btn btn-warning">Change Password</a>
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-warning">Edit Profile</a>
+
+                {% endif %}
+                
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 4 JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

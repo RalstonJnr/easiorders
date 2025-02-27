@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        /* Ensure the bottom logo is responsive */
+        .bottom-logo {
+            position: absolute;
+            right: 500px;
+            text-align: right;
+        }
+
+        /* Media query to handle small screens */
+        @media (max-width: 768px) {
+            .bottom-logo {
+                position: relative;
+                right: 0;
+                text-align: center;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Register</h2>
+        <img align="-100" width="180px" src="{{ url_for('static', filename='easiorders.png') }}" alt="logo" />
+        <br><br>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-danger">
+                    {% for category, message in messages %}
+                        <strong>{{ message }}</strong><br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Register Form -->
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required class="form-control">
+            </div>
+
+            <!-- Only show the special code input if the user is not the first user -->
+            {% if not is_first_user %}
+                <div class="form-group">
+                    <label for="special_code">Special Code</label>
+                    <input type="text" id="special_code" name="special_code" class="form-control">
+                </div>
+            {% endif %}
+            <a href="{{ url_for('login') }}" class="btn btn-warning">Back</a>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+
+        {% if error %}
+            <div class="alert alert-danger mt-3">
+                {{ error }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="bottom-logo">
+        <p><i>Proud Distributor of</i></p>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="logo" />
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
