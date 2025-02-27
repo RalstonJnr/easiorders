@@ -241,9 +241,11 @@ def register():
     return render_template("register.html")
 
 
+# Login Route
 @application.route("/login", methods=["GET", "POST"])
 def login():
     dark_mode = session.get("dark_mode", False)
+    
     if request.method == "POST":
         username = request.form["username"].strip().lower()  # Trim whitespace and convert to lowercase
         password = request.form["password"]
@@ -258,10 +260,9 @@ def login():
                 return redirect(url_for("index"))  # Redirect to home page for non-admin users
         else:
             flash("Incorrect username or password", "error")  # Flash an error message
+    
+    return render_template("login.html", dark_mode=dark_mode)  # Keep only one return statement
 
-    # If GET request or failed login, retain username input
-    return render_template("login.html", dark_mode=dark_mode, username=username)
-)
 
 
 # Logout Route
