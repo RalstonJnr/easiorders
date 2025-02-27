@@ -1,0 +1,543 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #F0F8FF;
+    color: #333;
+    padding: 10px;
+    margin: 0;
+}
+
+/* Loading Screen */
+#loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f9f9f9;
+}
+
+#loading-image {
+    width: 150px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* Headings */
+h1 {
+    font-size: 45px;
+    font-family: Georgia, serif;
+}
+
+/* Footer Logo */
+.footer-logo {
+    display: flex;
+    align-items: center;
+    height: 50vh;
+}
+
+/* Logo Styling */
+.logo, .logo-small {
+    display: flex;
+    align-items: center;
+    width: 20vh;
+    height: 20vh;
+}
+
+.logo-small {
+    max-width: 45px;
+}
+
+/* Header Styling */
+.head-container {
+    background-color: #f8f9fa;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.order-book-logo, .order-history-logo {
+    max-width: 120px;
+    height: auto;
+    display: block;
+    margin: 5px auto;
+}
+
+/* Navigation */
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Form Containers */
+.form-container, .form-container1 {
+    padding: 20px;
+    border: 5px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    margin: 20px auto;
+}
+
+.form-container {
+    max-width: 700px; /* Increased width of form */
+}
+
+.form-container1 {
+    width: 800px;
+}
+
+/* Form Inputs and Button Styling */
+input[type="text"], button {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #271f1d;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Form Labels */
+form label {
+    margin-bottom: 2px;
+    font-size: 1.7em;
+    font-family: Georgia, serif;
+}
+
+/* Dark Mode Input Field (Order Number) */
+.dark-mode .form-control[name="order_number"] {
+    background-color: white; /* White background for order number input */
+    color: black; /* Black text inside the input */
+    border: 1px solid #666666; /* Light border for contrast */
+}
+/* Dark Mode Input Field (customer_name) */
+.dark-mode .form-control[name="search"] {
+    background-color: white; /* White background for order number input */
+    color: black; /* Black text inside the input */
+    border: 1px solid #666666; /* Light border for contrast */
+}
+
+/* Dark Mode Label for the Order Number */
+.dark-mode .form-label[for="order_number"] {
+    color: black ; /* White text for the label */
+}
+/* Dark Mode Label for the customer_name */
+.dark-mode .form-label[for="search"] {
+    color: black ; /* White text for the label */
+}
+/* Dark Mode Label for the Flag/Meter */
+.dark-mode .form-label[for="filter"] {
+    color: black ; /* White text for the label */
+}
+
+/* Dark Mode Label for the Status*/
+.dark-mode .form-label[for="status"] {
+    color: black ; /* White text for the label */
+}
+
+/* Dark Mode Label for the User */
+.dark-mode .form-label[for="user_id"] {
+    color: black ; /* White text for the label */
+}
+
+/* Dark Mode Label for the Date Range  */
+.dark-mode .form-label[for="date_range"] {
+    color: black ; /* White text for the label */
+}
+
+/* Order Input Fields Dark Mode  */
+
+/* Dark Mode Input Field (customer_name)-order */
+.dark-mode .form-control[name="customer_name"] {
+    background-color: white; /* White background for order number input */
+    color: black; /* Black text inside the input */
+    border: 1px solid #666666; /* Light border for contrast */
+}
+/* Dark Mode Input Field (order_number)-order */
+.dark-mode .form-control[name="order_number"] {
+    background-color: white; /* White background for order number input */
+    color: black; /* Black text inside the input */
+    border: 1px solid #666666; /* Light border for contrast */
+}
+/* Dark Mode Input Field (comments)-order */
+.dark-mode .form-control[name="comments"] {
+    background-color: white; /* White background for order number input */
+    color: black; /* Black text inside the input */
+    border: 1px solid #666666; /* Light border for contrast */
+}
+
+/* Table Styling */
+table.container {
+    width: 100%;  /* Use full width for better visibility */
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    table-layout: auto; /* Allow columns to expand based on content */
+}
+
+/* Sticky Header */
+table.container thead {
+    position: sticky;
+    top: 0;
+    background-color: #3c798e; /* Match header color */
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+table.container th {
+    padding: 12px 15px;
+    text-align: left;
+    word-wrap: break-word;
+    min-width: 1px;
+    background-color: #3c798e; /* Ensure consistent background */
+    color: white;
+    font-weight: bold;
+}
+
+/* Add a scrollable wrapper for better behavior */
+.table-container {
+    max-height: 500px; /* Adjust based on preference */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #ccc; /* Optional border */
+}
+
+/* Keep row styles */
+table.container td {
+    border-bottom: 1px solid #ddd;
+    padding: 12px 15px;
+}
+
+table.container tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table.container tr:hover {
+    background-color: #ddd;
+}
+
+/* Scrollable Table (Adjusted for No Horizontal Scroll) */
+.table-wrapper {
+    width: 100%;
+    overflow-x: hidden; /* Hide horizontal scroll */
+}
+
+@media (max-width: 768px) {
+    table.container th, table.container td {
+        padding: 8px 10px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;  /* Enable horizontal scroll on small screens */
+    }
+
+    /* Make the form inputs more mobile-friendly */
+    .form-container, .form-container1 {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .form-container input[type="text"], .form-container input[type="date"], .form-container button {
+        width: 100%;
+    }
+
+    .order-item {
+        flex-direction: column; /* Stack items vertically on small screens */
+        align-items: stretch;   /* Stretch items to take full width */
+    }
+
+    .order-item select, .order-item input {
+        width: 100%;
+    }
+
+    .button-group {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+        gap: 10px;
+    }
+}
+
+/* Search Section */
+.search {
+    width: 100%;
+    margin: 50px auto;
+    text-align: center;
+}
+
+/* Expandable Section */
+.expandable {
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    background-color: lightblue;
+    transition: height 0.3s ease-in-out;
+}
+
+.expandable.active {
+    height: 100px;
+}
+
+/* Invoiced Orders */
+.invoiced {
+    background-color: #dfffd3 !important;
+}
+
+td.zero-value::before {
+    content: "0";
+}
+
+/* High Priority Orders */
+.high-priority {
+    background-color: #ffcccc;
+    font-weight: bold;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: dodgerblue;
+    cursor: pointer;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.theme-toggle a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Order Button Position - Small in Top Left Corner */
+.order-button {
+    position: fixed;  /* Position it relative to the viewport */
+    top: 10px;        /* Place it near the top */
+    left: 10px;       /* Align to the left */
+    background-color: #271f1d;
+    color: white;
+    padding: 8px 12px; /* Make the button small */
+    font-size: 14px;    /* Slightly smaller text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;  /* Ensure the button stays on top of other elements */
+}
+
+.order-button:hover {
+    background-color: #45a049;
+}
+
+/* General Dark Mode Styles */
+body.dark-mode {
+    background-color: #121212;
+    color: white; /* Text color for dark mode */
+}
+
+/* Dark Mode Table Styling */
+body.dark-mode table.container {
+    background-color: #2e2e2e;  /* Dark background for tables */
+    color: white;  /* White text for tables */
+}
+
+body.dark-mode table.container th {
+    background-color: #3c798e;  /* Table header background (adjust for dark mode) */
+    color: white;  /* White text for headers */
+}
+
+body.dark-mode table.container td {
+    background-color: #333;  /* Dark background for table rows */
+    color: white;  /* White text for table rows */
+    border-bottom: 1px solid #444;  /* Darker border color for rows */
+}
+
+/* Hover effect for table rows in dark mode */
+body.dark-mode table.container tr:hover {
+    background-color: #444;  /* Darker gray when hovering over a row */
+}
+
+/* Action links in tables in dark mode */
+body.dark-mode table.container a {
+    color: #4CAF50;  /* Green links */
+}
+
+body.dark-mode table.container a:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Dark Mode Input/Buttons */
+body.dark-mode input[type="text"], body.dark-mode button {
+    background-color: #333;  /* Dark background for inputs/buttons */
+    color: white;  /* White text */
+    border: 1px solid #444;  /* Darker border */
+}
+
+body.dark-mode button {
+    background-color: #271f1d;
+    color: white;
+}
+
+body.dark-mode button:hover {
+    background-color: #45a049;
+}
+
+/* Dark Mode Header */
+body.dark-mode .head-container {
+    background-color: #333;  /* Dark background for header */
+    color: white;  /* White text for header */
+}
+
+/* Dark Mode Footer */
+body.dark-mode .footer-logo {
+    background-color: #333;  /* Dark background for footer */
+}
+
+body.dark-mode .footer-logo .logo {
+    color: white;  /* White logo text for footer */
+}
+
+/* Dark Mode Form Styles */
+body.dark-mode .form-container, body.dark-mode .form-container1 {
+    background-color: #333;  /* Dark background for forms */
+    color: white;  /* White text */
+    border: 5px solid #444;  /* Darker border */
+}
+
+body.dark-mode form input, body.dark-mode form label {
+    color: white;  /* White text for labels and inputs */
+}
+
+/* Dark Mode Theme Toggle Icon */
+body.dark-mode .fas.fa-moon {
+    color: yellow;  /* Yellow moon icon */
+}
+
+body.dark-mode .fas.fa-sun {
+    color: orange;  /* Orange sun icon */
+}
+
+/* Ensure proper contrast in dark mode for text in expandable section */
+body.dark-mode .expandable {
+    background-color: #444;  /* Dark background for expandable section */
+    color: white;  /* White text */
+}
+
+body.dark-mode .expandable.active {
+    background-color: #555;  /* Slightly lighter background when active */
+    color: black;
+}
+
+/* Miscellaneous Dark Mode Styling */
+body.dark-mode h5 {
+    color: white;  /* White text for headings */
+}
+
+body.dark-mode .border-bottom {
+    border-bottom: 1px solid #444;  /* Darker separator line */
+}
+
+/* Adjust Mark as Invoiced Button */
+.mark-as-invoiced {
+    font-size: 14px;  /* Smaller text size for better fit */
+    padding: 6px 12px;  /* Adjust button padding */
+}
+
+/* Order Form - Positioning of Add/Remove buttons */
+.order-form .input-group {
+    display: flex;
+    align-items: center; /* Align items next to each other */
+}
+
+.order-form .input-group input {
+    flex-grow: 1; /* Allow input fields to take up remaining space */
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.order-form .input-group button {
+    margin-left: 10px; /* Space between input and buttons */
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.order-form .input-group button:hover {
+    background-color: #45a049;
+}
+
+body.dark-mode .navbar-text h5 {
+    color: black !important;  /* Ensure text turns black */
+}
+
+.footer-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#sortButton
+
+/* Form Containers */
+.form-container {
+    max-width: 900px; /* Increased width of form */
+    padding: 20px;
+    border: 5px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.form-container label {
+    width: 100%;
+    margin: 5px 0;
+    font-size: 1.3em;
+    font-family: Georgia, serif;
+}
+
+.form-container input[type="text"], .form-container input[type="date"], .form-container select, .form-container button {
+    width: 100%;
+    margin: 5px 0;
+}
+
+form select {
+    padding: 10px;
+}
+
