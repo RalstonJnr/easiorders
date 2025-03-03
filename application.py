@@ -1234,6 +1234,7 @@ def edit_order(order_id):
             existing_order = Order.query.filter(
                 Order.customer_name.ilike(customer_name),
                 Order.delivery_date == delivery_date_str,
+                Order.order_number.ilike(order_number),
                 Order.order_items == ", ".join(order_items),
             ).first()
 
